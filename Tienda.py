@@ -1,6 +1,8 @@
-from curses.ascii import isblank
+
 from datetime import datetime
-from typing_extensions import Self
+from functools import reduce
+from logging import exception
+
 
 
 class Transaccion:
@@ -20,10 +22,14 @@ class Transaccion:
         return self._tipo
 
 
-    @tipo.setter
-    def tipo(self, valor):
-        if valor == 1 or valor == 2:
-            self.tipo = valor  
+    @property
+    def cantidad(self):
+       return self._cantidad
+
+
+    @property
+    def fecha(self):
+        return self._fecha      
 
 class Libro:
     def __init__(self, isbn, titulo, precio_compra, precio_venta, cantidad_actual) -> None:
@@ -32,8 +38,57 @@ class Libro:
         self.precio_compra = precio_compra
         self.precio_venta = precio_venta
         self.cantidad_actual = cantidad_actual
-        self.transaccion = list()
+        self.Transaccion = list()
 
+
+    @property
+    def cantidad_actual(self):
+        return self._cantidad_actual
+
+
+    @cantidad_actual.setter
+    def cantidad_actual(self, nueva_cantidad):
+        if nueva_cantidad < 0:
+            raise exception("la cantidad de unidades de un libro no puede ser negativa")  
+
+        self._cantidad_actual = nueva_cantidad   
+
+    def vender(self, cantidad) -> bool:
+        """
+        Este metodo vende una catidad dada de ejemplares del libro. si no hay esa cantidad, no se realiza la venta y el metodo returna false, si la venta se realiza, el metodo returna True
+        """
+        if self.cantidad_actual >= cantidad:
+            self.cantidad_actual -= cantidad
+            transaccion = Transaccion(Transaccion.venta, cantidad)
+            self.Transaccion.append(Transaccion)
+            return True
+        else:
+            return False
+
+    def abastecer(self, cantidad):
+        self.cantidad_actual += cantidad
+        Transaccion = Transaccion(Transaccion.Abastecimiento, cantidad)
+        self.Transaccion.append(Transaccion)
+
+    def informar_ejemplares_venta(self) -> int:
+        if len(self, transacciones) > 0:
+            
+            # cantidades=[t.cantidad for t in self. transacciones if t.tipo == Transaccion.Venta]
+            # total_ejemplares = reduce(lambda x, y: x + y, cantidad)
+            # return total_ejemplares
+            
+            cantidad_ejemplares = 0
+            for trans in self,transacciones: 
+                if trans.tipo == Transaccion.Venta:
+                    cantidad_ejemplares += trans.cantidad 
+            return cantidad_ejemplares
+        else:
+            return 0
+
+
+    def __str__(self) -> str:
+        return f"ISBN: {self.isbn}\nTitulo: {self.titulo}"        
+                      
 
 
 
@@ -42,13 +97,25 @@ class Tienda:
         self.diner_en_caja = 1000000
         self.catalogo = dict()
 
+    def register_libro_en_catalogo(self, titulo, isbn, precio_venta, precio_compra, cantidad_actual): 
+        if isbn not in self.catalogo.keys():
+            libro = Libro( titulo, isbn, precio_venta, precio_compra, cantidad_actual)
+            self.catalogo[isbn] = libro
+
+        else:
+            raise Exception(f"ya existe un libro con el isbn")
+
+    def eliminar_libro_de_catalogo(self, isbn):
+        if isbn in self.catalogo.keys():
+            del self.catalogo[isbn]
+        else:
+            raise Exception(f"no existe un libro con el isbn")             
 
 
-if __name__ == "__main__":
-    trans_1 = Transaccion(Transaccion.Venta,5) 
-    trans_2 = Transaccion(Transaccion.Abastecimiento,10)
+libro = Libro("1234","El principito", 50000, 60000, 10)
 
-    print(f"tipo t1:{trans_1.cantidad}") 
-    print(f"tipo t2:{trans_2.cantidad}") 
+
+
+
 
         
